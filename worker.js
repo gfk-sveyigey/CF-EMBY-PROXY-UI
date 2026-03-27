@@ -245,7 +245,7 @@ function sanitizeProxyPath(path) {
 }
 
 function normalizeAdminPath(value) {
-  const fallback = "/admin";
+  const fallback = "/all";
   const raw = String(value || "").trim();
   if (!raw) return fallback;
   let normalized = sanitizeProxyPath(raw);
@@ -329,7 +329,7 @@ function buildInitHealthBannerHtml(initHealth) {
   return `<div id="init-health-banner" class="mx-4 mt-4 rounded-2xl border border-amber-200 bg-amber-50/95 px-4 py-3 text-sm text-amber-900 shadow-sm">
     <div class="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
       <div class="font-semibold">系统未初始化</div>
-      <div class="text-xs text-amber-700">管理入口：${escapeHtml(initHealth.adminPath || "/admin")}</div>
+      <div class="text-xs text-amber-700">管理入口：${escapeHtml(initHealth.adminPath || "/all")}</div>
     </div>
     <p class="mt-2 leading-6">检测到关键环境变量缺失：${missingText}</p>
     <p class="mt-1 text-xs leading-5 text-amber-700">请先在 Cloudflare Worker 环境变量中补齐后再使用管理台登录与敏感操作。</p>
@@ -10526,7 +10526,7 @@ const UI_HTML = `<!DOCTYPE html>
     const ADMIN_UI_BOOTSTRAP = globalThis.__ADMIN_BOOTSTRAP__ && typeof globalThis.__ADMIN_BOOTSTRAP__ === 'object'
       ? globalThis.__ADMIN_BOOTSTRAP__
       : {};
-    const ADMIN_PATH = String(ADMIN_UI_BOOTSTRAP.adminPath || (typeof window !== 'undefined' && window.location?.pathname) || '/admin');
+    const ADMIN_PATH = String(ADMIN_UI_BOOTSTRAP.adminPath || (typeof window !== 'undefined' && window.location?.pathname) || '/all');
     const ADMIN_LOGIN_PATH = String(ADMIN_UI_BOOTSTRAP.loginPath || (ADMIN_PATH === '/' ? '/login' : (ADMIN_PATH + '/login')));
     function renderUiBootstrapError(message) {
       if (typeof document === 'undefined') return;
@@ -11424,7 +11424,7 @@ function buildEdgeCorsResponse(dynamicCors, body, status = 200, options = {}) {
 }
 
 function isLegacyAdminLoginRoute(routeContext) {
-  return routeContext.adminPathLower === "/admin"
+  return routeContext.adminPathLower === "/all"
     && routeContext.pathnameLower === "/api/auth/login"
     && routeContext.root === "api"
     && routeContext.segments[1] === "auth"
