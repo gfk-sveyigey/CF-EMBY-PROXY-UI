@@ -33,7 +33,3 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --keep-vars
-          environment: |
-            KV_ID=${{ vars.KV_ID }}
-            D1_NAME=${{ vars.D1_NAME }}
-            D1_ID=${{ vars.D1_ID }}
