@@ -35,4 +35,5 @@ jobs:
           command: deploy --keep-vars
           environment: |
             KV_ID=${{ vars.KV_ID }}
+            D1_NAME=${{ vars.D1_NAME }}
             D1_ID=${{ vars.D1_ID }}
