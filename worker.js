@@ -11516,6 +11516,17 @@ async function resolveProxyRouteContext(routeContext, env, ctx, request) {
 
 async function handleWorkerFetch(request, env, ctx) {
   const routeContext = buildFetchRouteContext(request, env);
+  // 将旧的 ServerDomains 路径重定向到外部 Emby 页面
+  // 形如: /{node_name}/emby/System/Ext/ServerDomains
+  const serverDomainsMatch = routeContext.normalizedPathname && routeContext.normalizedPathname.match(/^\/([^\/]+)\/emby\/System\/Ext\/ServerDomains\/?$/i);
+  if (serverDomainsMatch) {
+    const nodeName = serverDomainsMatch[1];
+    const dest = `https://example.com/emby/${encodeURIComponent(nodeName)}`;
+    const headers = new Headers({ Location: dest, "Cache-Control": "no-store" });
+    applySecurityHeaders(headers);
+    return new Response(null, { status: 301, headers });
+  }
+  
   if (routeContext.errorResponse) return routeContext.errorResponse;
 
   if (request.method === "GET" && routeContext.normalizedPathname === "/") {
