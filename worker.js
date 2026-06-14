@@ -11516,15 +11516,27 @@ async function resolveProxyRouteContext(routeContext, env, ctx, request) {
 
 async function handleWorkerFetch(request, env, ctx) {
   const routeContext = buildFetchRouteContext(request, env);
-  // 将旧的 ServerDomains 路径重定向到外部 Emby 页面
+  // 将旧的 ServerDomains 路径代理到外部 Emby 页面并返回内容
   // 形如: /{node_name}/emby/System/Ext/ServerDomains
   const serverDomainsMatch = routeContext.normalizedPathname && routeContext.normalizedPathname.match(/^\/([^\/]+)\/emby\/System\/Ext\/ServerDomains\/?$/i);
   if (serverDomainsMatch) {
     const nodeName = serverDomainsMatch[1];
-    const dest = `https://subs.masker.icu/emby/${encodeURIComponent(nodeName)}`;
-    const headers = new Headers({ Location: dest, "Cache-Control": "no-store" });
-    applySecurityHeaders(headers);
-    return new Response(null, { status: 301, headers });
+    const dest = `https://example.com/emby/${encodeURIComponent(nodeName)}`;
+    try {
+      const upstreamResp = await fetch(dest, {
+        method: 'GET',
+        headers: {
+          Accept: request.headers.get('Accept') || '*/*',
+          'User-Agent': request.headers.get('User-Agent') || 'CF-EMBY-PROXY-UI'
+        }
+      });
+      const headers = new Headers(upstreamResp.headers);
+      applySecurityHeaders(headers);
+      for (const h of GLOBALS.DropResponseHeaders) headers.delete(h);
+      return new Response(upstreamResp.body, { status: upstreamResp.status, headers });
+    } catch (e) {
+      return jsonError('UPSTREAM_ERROR', 'Failed to fetch remote content', 502, { reason: e?.message });
+    }
   }
 
   if (routeContext.errorResponse) return routeContext.errorResponse;
